@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using TaskTrackerWebAPI.Entities;
+using TaskTrackerWebAPI.Services;
+
 namespace TaskTrackerWebAPI
 {
     public class Program
@@ -8,6 +12,8 @@ namespace TaskTrackerWebAPI
 
             builder.Services.AddControllers();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<TodoContext>(options => options.UseInMemoryDatabase("task_tracker"));
+            builder.Services.AddScoped<TodoItemsService>();
 
             var app = builder.Build();
 
