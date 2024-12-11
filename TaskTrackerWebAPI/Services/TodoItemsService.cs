@@ -36,6 +36,22 @@ namespace TaskTrackerWebAPI.Services
             return newTodoItem;
         }
 
+        public async Task<bool> UpdateItem(TodoItemDto itemDto)
+        {
+            var item = await GetItem(itemDto.Id);
+
+            if (item == null)
+                return false;
+
+            item.Name = itemDto.Name;
+            item.State = itemDto.State;
+
+            _context.TodoItems.Update(item);
+            await _context.SaveChangesAsync();
+            
+            return true;
+        }
+
         public async Task<bool> DeleteItem(Guid id)
         {
             var item = await GetItem(id);

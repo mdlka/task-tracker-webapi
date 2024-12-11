@@ -23,13 +23,13 @@ namespace TaskTrackerWebAPI.Controllers
             if (item == null)
                 return NotFound();
 
-            return Ok(item);
+            return Ok(ConvertToDto(item));
         }
 
         [HttpGet]
         public IActionResult GetItems()
         {
-            return Ok(_todoItemsService.GetItems());
+            return Ok(_todoItemsService.GetItems().Select(ConvertToDto));
         }
 
         [HttpPost]
@@ -39,7 +39,17 @@ namespace TaskTrackerWebAPI.Controllers
                 return BadRequest();
 
             var newTodoItem = await _todoItemsService.CreateItem(todoItemSummary);
-            return CreatedAtAction(nameof(PostItem), newTodoItem.Id, newTodoItem);
+            return CreatedAtAction(nameof(PostItem), newTodoItem.Id, ConvertToDto(newTodoItem));
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> PutItem([FromBody] TodoItemDto todoItem)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            bool result = await _todoItemsService.UpdateItem(todoItem);
+            return result ? Ok() : NotFound();
         }
 
         [HttpDelete("{itemId:guid}")]
@@ -47,6 +57,16 @@ namespace TaskTrackerWebAPI.Controllers
         {
             bool result = await _todoItemsService.DeleteItem(itemId);
             return result ? Ok() : NotFound();
+        }
+
+        private static TodoItemDto ConvertToDto(TodoItem item)
+        {
+            return new TodoItemDto
+            {
+                Id = item.Id,
+                Name = item.Name,
+                State = item.State
+            };
         }
     }
 }

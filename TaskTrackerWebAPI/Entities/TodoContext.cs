@@ -9,5 +9,6 @@ namespace TaskTrackerWebAPI.Entities
         { }
         
         public DbSet<TodoItem> TodoItems { get; set; }
+        public DbSet<TodoBoard> TodoBoards { get; set; }
     }
 }
