@@ -5,7 +5,7 @@ using TaskTrackerWebAPI.Services;
 namespace TaskTrackerWebAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/{boardId:guid}/[controller]")]
     public class TodoItemsController : ControllerBase
     {
         private readonly TodoItemsService _todoItemsService;

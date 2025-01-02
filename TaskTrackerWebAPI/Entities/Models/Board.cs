@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace TaskTrackerWebAPI.Entities
 {
     [Table(name: "boards")]
-    public class TodoBoard
+    public class Board
     {
         [Key]
         [Column(name: "board_id")]

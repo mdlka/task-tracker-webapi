@@ -14,6 +14,7 @@ namespace TaskTrackerWebAPI
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<TodoContext>(options => options.UseInMemoryDatabase("task_tracker"));
             builder.Services.AddScoped<TodoItemsService>();
+            builder.Services.AddScoped<BoardService>();
 
             var app = builder.Build();
 

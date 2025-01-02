@@ -1,7 +1,7 @@
 ﻿
 namespace TaskTrackerWebAPI.Entities
 {
-    public class TodoBoardSummaryDto
+    public class BoardDto
     {
         public string Name { get; set; }
     }
