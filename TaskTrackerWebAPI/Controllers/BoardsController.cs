@@ -33,7 +33,7 @@ namespace TaskTrackerWebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostBoard([FromBody] BoardDto boardDto)
+        public async Task<IActionResult> PostBoard([FromBody] BoardSummaryDto boardDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
@@ -46,6 +46,7 @@ namespace TaskTrackerWebAPI.Controllers
         {
             return new BoardDto
             {
+                Id = board.Id,
                 Name = board.Name
             };
         }

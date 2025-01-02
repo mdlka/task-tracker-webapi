@@ -22,7 +22,7 @@ namespace TaskTrackerWebAPI.Services
             return _context.Boards.AsNoTracking();
         }
 
-        public async Task<Board> CreateBoard(BoardDto boardDto)
+        public async Task<Board> CreateBoard(BoardSummaryDto boardDto)
         {
             var board = new Board()
             {

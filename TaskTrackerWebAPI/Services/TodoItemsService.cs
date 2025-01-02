@@ -17,17 +17,18 @@ namespace TaskTrackerWebAPI.Services
             return _context.TodoItems.FirstOrDefaultAsync(item => item.Id == id);
         }
 
-        public IEnumerable<TodoItem> GetItems()
+        public IEnumerable<TodoItem> GetItems(Guid boardId)
         {
-            return _context.TodoItems.AsNoTracking();
+            return _context.TodoItems.Where(item => item.BoardId == boardId).AsNoTracking();
         }
 
-        public async Task<TodoItem> CreateItem(TodoItemSummaryDto todoItemSummary)
+        public async Task<TodoItem> CreateItem(TodoItemSummaryDto todoItemSummary, Guid boardId)
         {
             var newTodoItem = new TodoItem
             {
                 Id = Guid.NewGuid(),
-                Name = todoItemSummary.Name
+                Name = todoItemSummary.Name,
+                BoardId = boardId
             };
 
             await _context.TodoItems.AddAsync(newTodoItem);

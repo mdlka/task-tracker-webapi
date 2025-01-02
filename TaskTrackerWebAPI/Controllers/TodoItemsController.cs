@@ -16,29 +16,29 @@ namespace TaskTrackerWebAPI.Controllers
         }
 
         [HttpGet("{itemId:guid}")]
-        public async Task<IActionResult> GetItem(Guid itemId)
+        public async Task<IActionResult> GetItem(Guid itemId, Guid boardId)
         {
             var item = await _todoItemsService.GetItem(itemId);
 
-            if (item == null)
+            if (item == null || item.BoardId != boardId)
                 return NotFound();
 
             return Ok(ConvertToDto(item));
         }
 
         [HttpGet]
-        public IActionResult GetItems()
+        public IActionResult GetItems(Guid boardId)
         {
-            return Ok(_todoItemsService.GetItems().Select(ConvertToDto));
+            return Ok(_todoItemsService.GetItems(boardId).Select(ConvertToDto));
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostItem([FromBody] TodoItemSummaryDto todoItemSummary)
+        public async Task<IActionResult> PostItem([FromBody] TodoItemSummaryDto todoItemSummary, Guid boardId)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var newTodoItem = await _todoItemsService.CreateItem(todoItemSummary);
+            var newTodoItem = await _todoItemsService.CreateItem(todoItemSummary, boardId);
             return CreatedAtAction(nameof(PostItem), newTodoItem.Id, ConvertToDto(newTodoItem));
         }
 
