@@ -27,7 +27,7 @@ namespace TaskTrackerWebAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetBoard()
+        public IActionResult GetBoards()
         {
             return Ok(_boardService.GetBoards().Select(ConvertToDto));
         }

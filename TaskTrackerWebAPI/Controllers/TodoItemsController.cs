@@ -5,7 +5,7 @@ using TaskTrackerWebAPI.Services;
 namespace TaskTrackerWebAPI.Controllers
 {
     [ApiController]
-    [Route("api/{boardId:guid}/[controller]")]
+    [Route("api/[controller]")]
     public class TodoItemsController : ControllerBase
     {
         private readonly TodoItemsService _todoItemsService;
@@ -16,26 +16,32 @@ namespace TaskTrackerWebAPI.Controllers
         }
 
         [HttpGet("{itemId:guid}")]
-        public async Task<IActionResult> GetItem(Guid itemId, Guid boardId)
+        public async Task<IActionResult> GetItem(Guid itemId)
         {
             var item = await _todoItemsService.GetItem(itemId);
 
-            if (item == null || item.BoardId != boardId)
+            if (item == null)
                 return NotFound();
 
             return Ok(ConvertToDto(item));
         }
 
         [HttpGet]
-        public IActionResult GetItems(Guid boardId)
+        public IActionResult GetItems([FromQuery] Guid boardId)
         {
+            if (boardId == Guid.Empty)
+                return NotFound();
+            
             return Ok(_todoItemsService.GetItems(boardId).Select(ConvertToDto));
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostItem([FromBody] TodoItemSummaryDto todoItemSummary, Guid boardId)
+        public async Task<IActionResult> PostItem([FromQuery] Guid boardId, [FromBody] TodoItemSummaryDto todoItemSummary)
         {
             if (!ModelState.IsValid)
+                return BadRequest();
+
+            if (boardId == Guid.Empty)
                 return BadRequest();
 
             var newTodoItem = await _todoItemsService.CreateItem(todoItemSummary, boardId);
