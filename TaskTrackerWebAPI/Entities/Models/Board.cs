@@ -10,7 +10,7 @@ namespace TaskTrackerWebAPI.Entities
         [Column(name: "board_id")]
         public Guid Id { get; set; }
         
-        [Column(name: "board_name")]
+        [Column(name: "name")]
         public string Name { get; set; }
     }
 }
