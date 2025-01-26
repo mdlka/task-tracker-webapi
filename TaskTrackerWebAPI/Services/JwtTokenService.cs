@@ -21,7 +21,7 @@ namespace TaskTrackerWebAPI.Services
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Value.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithm);
-
+            
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new List<Claim>()),
@@ -42,7 +42,7 @@ namespace TaskTrackerWebAPI.Services
             using var randomGenerator = RandomNumberGenerator.Create();
             randomGenerator.GetBytes(randomNumber);
                 
-            return new RefreshToken()
+            return new RefreshToken
             {
                 Token = Convert.ToBase64String(randomNumber),
                 ExpiresAt = DateTime.UtcNow.Add(_config.Value.RefreshTokenLifetime)

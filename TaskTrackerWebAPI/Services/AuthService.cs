@@ -1,27 +1,34 @@
-﻿using TaskTrackerWebAPI.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using TaskTrackerWebAPI.Entities;
 
 namespace TaskTrackerWebAPI.Services
 {
     public class AuthService
     {
         private readonly JwtTokenService _jwtTokenService;
+        private readonly TodoContext _context;
 
-        public AuthService(JwtTokenService jwtTokenService)
+        public AuthService(JwtTokenService jwtTokenService, TodoContext context)
         {
             _jwtTokenService = jwtTokenService;
+            _context = context;
+            
+            if (!_context.UsersCredentials.Any())
+                _context.Database.EnsureCreated();
         }
 
-        public LoginTokensDto? Login(LoginCredentialsDto loginCredentialsDto)
+        public async Task<AuthenticatedResponse?> Login(UserCredentialsDto userCredentialsDto)
         {
-            if (loginCredentialsDto is { Email: "test@mail.ru", Password: "123" })
-            {
-                return new LoginTokensDto
-                {
-                    Access = _jwtTokenService.CreateAccessToken()
-                };
-            }
+            var userCredentials = await _context.UsersCredentials.FirstOrDefaultAsync(u =>
+                u.Login == userCredentialsDto.Email && u.Password == userCredentialsDto.Password);
 
-            return null;
+            if (userCredentials == null)
+                return null;
+            
+            return new AuthenticatedResponse
+            {
+                AccessToken = _jwtTokenService.CreateAccessToken(),
+            };
         }
     }
 }

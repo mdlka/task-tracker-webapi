@@ -16,12 +16,12 @@ namespace TaskTrackerWebAPI.Controllers
         }
         
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginCredentialsDto loginCredentialsDto)
+        public async Task<IActionResult> Login([FromBody] UserCredentialsDto userCredentialsDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var token = _authService.Login(loginCredentialsDto);
+            var token = await _authService.Login(userCredentialsDto);
 
             if (token == null)
                 return Unauthorized();
