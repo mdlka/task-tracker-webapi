@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskTrackerWebAPI.Entities;
 using TaskTrackerWebAPI.Services;
 
@@ -33,6 +34,7 @@ namespace TaskTrackerWebAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> PostBoard([FromBody] BoardSummaryDto boardDto)
         {
             if (!ModelState.IsValid)
