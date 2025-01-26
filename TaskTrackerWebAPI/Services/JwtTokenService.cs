@@ -10,7 +10,6 @@ namespace TaskTrackerWebAPI.Services
     public class JwtTokenService
     {
         private const string SecurityAlgorithm = SecurityAlgorithms.HmacSha256;
-
         private readonly IOptions<JwtConfig> _config;
 
         public JwtTokenService(IOptions<JwtConfig> jwtConfig)
@@ -18,19 +17,14 @@ namespace TaskTrackerWebAPI.Services
             _config = jwtConfig;
         }
 
-        public string CreateAccessToken(string id)
+        public string CreateAccessToken()
         {
-            var claims = new List<Claim>
-            {
-                new Claim("id", id),
-            };
-
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Value.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithm);
 
-            var tokenDescriptor = new SecurityTokenDescriptor()
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(claims),
+                Subject = new ClaimsIdentity(new List<Claim>()),
                 Expires = DateTime.UtcNow.Add(_config.Value.AccessTokenLifetime),
                 SigningCredentials = credentials,
             };
@@ -60,15 +54,5 @@ namespace TaskTrackerWebAPI.Services
             public string Token { get; set;}
             public DateTime ExpiresAt { get; set;}
         }
-    }
-    
-    public class JwtConfig
-    {
-        public string Secret { get; set; }
-        public string accessTokenExpirationMinutes { get; set; }
-        public string refreshTokenExpirationDays { get; set; }
-
-        public TimeSpan AccessTokenLifetime => TimeSpan.FromMinutes(int.Parse(accessTokenExpirationMinutes));
-        public TimeSpan RefreshTokenLifetime => TimeSpan.FromDays(int.Parse(refreshTokenExpirationDays));
     }
 }

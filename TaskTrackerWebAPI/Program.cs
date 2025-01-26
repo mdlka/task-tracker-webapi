@@ -44,6 +44,7 @@ namespace TaskTrackerWebAPI
             builder.Services.AddDbContext<TodoContext>(options => options.UseInMemoryDatabase("task_tracker"));
             builder.Services.AddScoped<TodoItemsService>();
             builder.Services.AddScoped<BoardService>();
+            builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<JwtTokenService>();
             builder.Services.Configure<JwtConfig>(builder.Configuration.GetSection("JwtConfig"));
             
