@@ -52,5 +52,29 @@ namespace TaskTrackerWebAPI.Services
                 RefreshToken = refreshToken.Token
             };
         }
+
+        public async Task<AuthenticatedResponse?> Refresh(string refreshToken)
+        {
+            var oldRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(token => token.Token == refreshToken);
+
+            if (oldRefreshToken == null)
+                return null;
+
+            if (DateTime.Now > oldRefreshToken.ExpiresAt)
+                return null;
+
+            var newRefreshToken = _jwtTokenService.CreateRefreshToken();
+            oldRefreshToken.Token = newRefreshToken.Token;
+            oldRefreshToken.ExpiresAt = newRefreshToken.ExpiresAt;
+
+            _context.RefreshTokens.Update(oldRefreshToken);
+            await _context.SaveChangesAsync();
+
+            return new AuthenticatedResponse
+            {
+                AccessToken = _jwtTokenService.CreateAccessToken(),
+                RefreshToken = newRefreshToken.Token
+            };
+        }
     }
 }

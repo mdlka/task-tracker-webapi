@@ -28,5 +28,16 @@ namespace TaskTrackerWebAPI.Controllers
 
             return Ok(token);
         }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] string refreshToken)
+        {
+            var token = await _authService.Refresh(refreshToken);
+
+            if (token == null)
+                return BadRequest();
+
+            return Ok(token);
+        }
     }
 }
