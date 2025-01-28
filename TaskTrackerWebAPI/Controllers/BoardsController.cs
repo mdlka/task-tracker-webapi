@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskTrackerWebAPI.Entities;
 using TaskTrackerWebAPI.Services;
@@ -7,6 +8,7 @@ namespace TaskTrackerWebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class BoardsController : ControllerBase
     {
         private readonly BoardService _boardService;
@@ -19,7 +21,12 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet("{boardId:guid}")]
         public async Task<IActionResult> GetBoard(Guid boardId)
         {
-            var board = await _boardService.GetBoard(boardId);
+            Guid? userId = GetUserId();
+
+            if (userId == null)
+                return UnprocessableEntity();
+            
+            var board = await _boardService.GetBoard(boardId, userId.Value);
 
             if (board == null)
                 return NotFound();
@@ -30,15 +37,34 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet]
         public IActionResult GetBoards()
         {
-            return Ok(_boardService.GetBoards().Select(ConvertToDto));
+            Guid? userId = GetUserId();
+
+            if (userId == null)
+                return UnprocessableEntity();
+            
+            return Ok(_boardService.GetBoards(userId.Value).Select(ConvertToDto));
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> PostBoard([FromBody] BoardSummaryDto boardDto)
         {
-            var board = await _boardService.CreateBoard(boardDto);
+            Guid? userId = GetUserId();
+
+            if (userId == null)
+                return UnprocessableEntity();
+            
+            var board = await _boardService.CreateBoard(boardDto, userId.Value);
             return CreatedAtAction(nameof(PostBoard), board.Id, ConvertToDto(board));
+        }
+
+        private Guid? GetUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return null;
+
+            return Guid.Parse(userIdClaim.Value);
         }
 
         private static BoardDto ConvertToDto(Board board)
