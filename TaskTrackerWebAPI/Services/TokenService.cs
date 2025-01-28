@@ -7,24 +7,29 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace TaskTrackerWebAPI.Services
 {
-    public class JwtTokenService
+    public class TokenService
     {
         private const string SecurityAlgorithm = SecurityAlgorithms.HmacSha256;
         private readonly IOptions<JwtConfig> _config;
 
-        public JwtTokenService(IOptions<JwtConfig> jwtConfig)
+        public TokenService(IOptions<JwtConfig> jwtConfig)
         {
             _config = jwtConfig;
         }
 
-        public string CreateAccessToken()
+        public string CreateAccessToken(Guid userId)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Value.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithm);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            };
             
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new List<Claim>()),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.Add(_config.Value.AccessTokenLifetime),
                 SigningCredentials = credentials,
             };
@@ -47,6 +52,27 @@ namespace TaskTrackerWebAPI.Services
                 Token = Convert.ToBase64String(randomNumber),
                 ExpiresAt = DateTime.UtcNow.Add(_config.Value.RefreshTokenLifetime)
             };
+        }
+        
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = false,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Value.Secret))
+            };
+            
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken 
+                || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithm, StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("Invalid token");
+            
+            return principal;
         }
 
         public struct RefreshToken

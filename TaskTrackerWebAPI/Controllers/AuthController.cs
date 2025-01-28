@@ -33,9 +33,9 @@ namespace TaskTrackerWebAPI.Controllers
         }
 
         [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] string refreshToken)
+        public async Task<IActionResult> Refresh([FromBody] TokensDto tokensDto)
         {
-            var token = await _authService.Refresh(refreshToken);
+            var token = await _authService.Refresh(tokensDto);
 
             if (token == null)
                 return BadRequest();

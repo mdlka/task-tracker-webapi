@@ -1,16 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using TaskTrackerWebAPI.Entities;
 
 namespace TaskTrackerWebAPI.Services
 {
     public class AuthService
     {
-        private readonly JwtTokenService _jwtTokenService;
+        private readonly TokenService _tokenService;
         private readonly TodoContext _context;
 
-        public AuthService(JwtTokenService jwtTokenService, TodoContext context)
+        public AuthService(TokenService tokenService, TodoContext context)
         {
-            _jwtTokenService = jwtTokenService;
+            _tokenService = tokenService;
             _context = context;
             
             if (!_context.UsersCredentials.Any())
@@ -34,7 +35,7 @@ namespace TaskTrackerWebAPI.Services
             
             await _context.UsersCredentials.AddAsync(new UserCredentials()
             {
-                Id = userId,
+                UserId = userId,
                 Login = registrationDto.Email,
                 Password = registrationDto.Password,
                 Version = 1
@@ -45,7 +46,7 @@ namespace TaskTrackerWebAPI.Services
             return true;
         }
 
-        public async Task<AuthenticatedResponse?> Login(UserCredentialsDto userCredentialsDto)
+        public async Task<TokensDto?> Login(UserCredentialsDto userCredentialsDto)
         {
             var userCredentials = await _context.UsersCredentials.FirstOrDefaultAsync(u =>
                 u.Login == userCredentialsDto.Email && u.Password == userCredentialsDto.Password);
@@ -53,14 +54,14 @@ namespace TaskTrackerWebAPI.Services
             if (userCredentials == null)
                 return null;
 
-            var refreshToken = _jwtTokenService.CreateRefreshToken();
-            var oldRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Id == userCredentials.Id);
+            var refreshToken = _tokenService.CreateRefreshToken();
+            var oldRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userCredentials.UserId);
 
             if (oldRefreshToken == null)
             {
                 await _context.RefreshTokens.AddAsync(new RefreshToken
                 {
-                    Id = userCredentials.Id,
+                    UserId = userCredentials.UserId,
                     Token = refreshToken.Token,
                     ExpiresAt = refreshToken.ExpiresAt
                 });
@@ -74,16 +75,23 @@ namespace TaskTrackerWebAPI.Services
 
             await _context.SaveChangesAsync();
             
-            return new AuthenticatedResponse
+            return new TokensDto
             {
-                AccessToken = _jwtTokenService.CreateAccessToken(),
+                AccessToken = _tokenService.CreateAccessToken(userCredentials.UserId),
                 RefreshToken = refreshToken.Token
             };
         }
 
-        public async Task<AuthenticatedResponse?> Refresh(string refreshToken)
+        public async Task<TokensDto?> Refresh(TokensDto tokens)
         {
-            var oldRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(token => token.Token == refreshToken);
+            var principal = _tokenService.GetPrincipalFromExpiredToken(tokens.AccessToken);
+            var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+                return null;
+            
+            var userId = Guid.Parse(userIdClaim.Value);
+            var oldRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(token => token.UserId == userId);
 
             if (oldRefreshToken == null)
                 return null;
@@ -91,16 +99,16 @@ namespace TaskTrackerWebAPI.Services
             if (DateTime.Now > oldRefreshToken.ExpiresAt)
                 return null;
 
-            var newRefreshToken = _jwtTokenService.CreateRefreshToken();
+            var newRefreshToken = _tokenService.CreateRefreshToken();
             oldRefreshToken.Token = newRefreshToken.Token;
             oldRefreshToken.ExpiresAt = newRefreshToken.ExpiresAt;
 
             _context.RefreshTokens.Update(oldRefreshToken);
             await _context.SaveChangesAsync();
 
-            return new AuthenticatedResponse
+            return new TokensDto
             {
-                AccessToken = _jwtTokenService.CreateAccessToken(),
+                AccessToken = _tokenService.CreateAccessToken(oldRefreshToken.UserId),
                 RefreshToken = newRefreshToken.Token
             };
         }

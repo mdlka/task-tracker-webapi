@@ -9,7 +9,7 @@ namespace TaskTrackerWebAPI.Entities
         [Key]
         [ForeignKey(nameof(User))]
         [Column(name: "user_id")]
-        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
         
         [EmailAddress]
         [Column(name: "login")]
