@@ -14,8 +14,11 @@ namespace TaskTrackerWebAPI.Entities
         [Column(name: "email")]
         public string Email { get; set; }
         
-        [Column(name: "nickname")]
-        public string Nickname { get; set; }
+        [Column(name: "name")]
+        public string Name { get; set; }
+        
+        [Column(name: "created_at", TypeName = "timestamptz")]
+        public DateTime CreatedAt { get; set; }
 
         public UserCredentials UserCredentials { get; set; }
     }

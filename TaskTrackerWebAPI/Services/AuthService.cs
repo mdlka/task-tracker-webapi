@@ -17,6 +17,34 @@ namespace TaskTrackerWebAPI.Services
                 _context.Database.EnsureCreated();
         }
 
+        public async Task<bool> Register(RegistrationDto registrationDto)
+        {
+            if (await _context.Users.FirstOrDefaultAsync(u => u.Email == registrationDto.Email) != null)
+                return false;
+
+            var userId = Guid.NewGuid();
+
+            await _context.Users.AddAsync(new User
+            {
+                Id = userId,
+                Email = registrationDto.Email,
+                Name = registrationDto.Name,
+                CreatedAt = DateTime.Now
+            });
+            
+            await _context.UsersCredentials.AddAsync(new UserCredentials()
+            {
+                Id = userId,
+                Login = registrationDto.Email,
+                Password = registrationDto.Password,
+                Version = 1
+            });
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
         public async Task<AuthenticatedResponse?> Login(UserCredentialsDto userCredentialsDto)
         {
             var userCredentials = await _context.UsersCredentials.FirstOrDefaultAsync(u =>

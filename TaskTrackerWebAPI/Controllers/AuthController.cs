@@ -14,6 +14,15 @@ namespace TaskTrackerWebAPI.Controllers
         {
             _authService = authService;
         }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegistrationDto registrationDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            return await _authService.Register(registrationDto) ? Ok() : BadRequest();
+        }
         
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserCredentialsDto userCredentialsDto)
