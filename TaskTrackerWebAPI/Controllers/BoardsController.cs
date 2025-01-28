@@ -37,9 +37,6 @@ namespace TaskTrackerWebAPI.Controllers
         [Authorize]
         public async Task<IActionResult> PostBoard([FromBody] BoardSummaryDto boardDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             var board = await _boardService.CreateBoard(boardDto);
             return CreatedAtAction(nameof(PostBoard), board.Id, ConvertToDto(board));
         }

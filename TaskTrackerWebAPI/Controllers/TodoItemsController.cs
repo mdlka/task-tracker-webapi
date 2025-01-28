@@ -38,9 +38,6 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostItem([FromQuery] Guid boardId, [FromBody] TodoItemSummaryDto todoItemSummary)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
             if (boardId == Guid.Empty)
                 return BadRequest();
 
@@ -51,18 +48,13 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> PutItem([FromBody] TodoItemDto todoItem)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
-
-            bool result = await _todoItemsService.UpdateItem(todoItem);
-            return result ? Ok() : NotFound();
+            return await _todoItemsService.UpdateItem(todoItem) ? Ok() : NotFound();
         }
 
         [HttpDelete("{itemId:guid}")]
         public async Task<IActionResult> DeleteItem(Guid itemId)
         {
-            bool result = await _todoItemsService.DeleteItem(itemId);
-            return result ? Ok() : NotFound();
+            return await _todoItemsService.DeleteItem(itemId) ? Ok() : NotFound();
         }
 
         private static TodoItemDto ConvertToDto(TodoItem item)
