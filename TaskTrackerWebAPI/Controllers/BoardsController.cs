@@ -21,12 +21,10 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet("{boardId:guid}")]
         public async Task<IActionResult> GetBoard(Guid boardId)
         {
-            Guid? userId = GetUserId();
-
-            if (userId == null)
+            if (!TryGetUserId(out var userId))
                 return UnprocessableEntity();
             
-            var board = await _boardService.GetBoard(boardId, userId.Value);
+            var board = await _boardService.GetBoard(boardId, userId);
 
             if (board == null)
                 return NotFound();
@@ -37,34 +35,32 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet]
         public IActionResult GetBoards()
         {
-            Guid? userId = GetUserId();
-
-            if (userId == null)
+            if (!TryGetUserId(out var userId))
                 return UnprocessableEntity();
             
-            return Ok(_boardService.GetBoards(userId.Value).Select(ConvertToDto));
+            return Ok(_boardService.GetBoards(userId).Select(ConvertToDto));
         }
 
         [HttpPost]
         public async Task<IActionResult> PostBoard([FromBody] BoardSummaryDto boardDto)
         {
-            Guid? userId = GetUserId();
-
-            if (userId == null)
+            if (!TryGetUserId(out var userId))
                 return UnprocessableEntity();
             
-            var board = await _boardService.CreateBoard(boardDto, userId.Value);
+            var board = await _boardService.CreateBoard(boardDto, userId);
             return CreatedAtAction(nameof(PostBoard), board.Id, ConvertToDto(board));
         }
 
-        private Guid? GetUserId()
+        private bool TryGetUserId(out Guid userId)
         {
+            userId = Guid.Empty;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
             if (userIdClaim == null)
-                return null;
+                return false;
 
-            return Guid.Parse(userIdClaim.Value);
+            userId = Guid.Parse(userIdClaim.Value);
+            return true;
         }
 
         private static BoardDto ConvertToDto(Board board)
