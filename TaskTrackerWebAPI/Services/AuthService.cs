@@ -13,9 +13,6 @@ namespace TaskTrackerWebAPI.Services
         {
             _tokenService = tokenService;
             _context = context;
-            
-            if (!_context.UsersCredentials.Any())
-                _context.Database.EnsureCreated();
         }
 
         public async Task<bool> Register(RegistrationDto registrationDto)

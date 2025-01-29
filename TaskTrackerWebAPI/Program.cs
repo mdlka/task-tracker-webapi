@@ -43,7 +43,7 @@ namespace TaskTrackerWebAPI
             });
             
             builder.Services.AddDbContext<TodoContext>(options => 
-                options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultPostgresqlConnection"]));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultPostgresqlConnection")));
             
             builder.Services.AddScoped<TodoItemsService>();
             builder.Services.AddScoped<BoardService>();
@@ -71,11 +71,11 @@ namespace TaskTrackerWebAPI
             
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("EnableCORS", builder => 
+                options.AddPolicy("EnableCORS", policyBuilder => 
                 { 
-                    builder.AllowAnyOrigin()
-                        .AllowAnyHeader()
-                        .AllowAnyMethod(); 
+                    policyBuilder.AllowAnyOrigin()
+                                 .AllowAnyHeader()
+                                 .AllowAnyMethod(); 
                 });
             });
 
