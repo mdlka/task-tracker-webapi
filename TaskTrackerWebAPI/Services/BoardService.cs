@@ -12,12 +12,12 @@ namespace TaskTrackerWebAPI.Services
             _context = context;
         }
 
-        public Task<Board?> GetBoard(Guid id, Guid userId)
+        public Task<Board?> GetBoard(Guid boardId, Guid userId)
         {
-            return _context.Boards.Where(b => b.OwnerId == userId).FirstOrDefaultAsync(board => board.Id == id);
+            return GetBoards(userId).FirstOrDefaultAsync(board => board.Id == boardId);
         }
 
-        public IEnumerable<Board> GetBoards(Guid userId)
+        public IQueryable<Board> GetBoards(Guid userId)
         {
             return _context.Boards.Where(b => b.OwnerId == userId).AsNoTracking();
         }

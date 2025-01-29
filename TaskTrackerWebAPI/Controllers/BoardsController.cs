@@ -38,7 +38,7 @@ namespace TaskTrackerWebAPI.Controllers
             if (!TryGetUserId(out var userId))
                 return UnprocessableEntity();
             
-            return Ok(_boardService.GetBoards(userId).Select(ConvertToDto));
+            return Ok(_boardService.GetBoards(userId).AsEnumerable().Select(ConvertToDto));
         }
 
         [HttpPost]
