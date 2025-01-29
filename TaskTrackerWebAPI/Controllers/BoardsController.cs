@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskTrackerWebAPI.Entities;
+using TaskTrackerWebAPI.Extensions;
 using TaskTrackerWebAPI.Services;
 
 namespace TaskTrackerWebAPI.Controllers
@@ -21,7 +22,7 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet("{boardId:guid}")]
         public async Task<IActionResult> GetBoard(Guid boardId)
         {
-            if (!TryGetUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return UnprocessableEntity();
             
             var board = await _boardService.GetBoard(boardId, userId);
@@ -35,7 +36,7 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet]
         public IActionResult GetBoards()
         {
-            if (!TryGetUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return UnprocessableEntity();
             
             return Ok(_boardService.GetBoards(userId).AsEnumerable().Select(ConvertToDto));
@@ -44,23 +45,11 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> PostBoard([FromBody] BoardSummaryDto boardDto)
         {
-            if (!TryGetUserId(out var userId))
+            if (!User.TryGetUserId(out var userId))
                 return UnprocessableEntity();
             
             var board = await _boardService.CreateBoard(boardDto, userId);
             return CreatedAtAction(nameof(PostBoard), board.Id, ConvertToDto(board));
-        }
-
-        private bool TryGetUserId(out Guid userId)
-        {
-            userId = Guid.Empty;
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-                return false;
-
-            userId = Guid.Parse(userIdClaim.Value);
-            return true;
         }
 
         private static BoardDto ConvertToDto(Board board)
