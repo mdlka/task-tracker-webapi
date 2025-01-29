@@ -41,7 +41,10 @@ namespace TaskTrackerWebAPI
                     }
                 });
             });
-            builder.Services.AddDbContext<TodoContext>(options => options.UseInMemoryDatabase("task_tracker"));
+            
+            builder.Services.AddDbContext<TodoContext>(options => 
+                options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultPostgresqlConnection"]));
+            
             builder.Services.AddScoped<TodoItemsService>();
             builder.Services.AddScoped<BoardService>();
             builder.Services.AddScoped<AuthService>();
