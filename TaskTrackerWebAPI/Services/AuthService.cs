@@ -27,7 +27,7 @@ namespace TaskTrackerWebAPI.Services
                 Id = userId,
                 Email = registrationDto.Email,
                 Name = registrationDto.Name,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             });
             
             await _context.UsersCredentials.AddAsync(new UserCredentials()
