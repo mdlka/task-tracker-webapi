@@ -1,8 +1,6 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskTrackerWebAPI.Entities;
-using TaskTrackerWebAPI.Extensions;
 using TaskTrackerWebAPI.Services;
 
 namespace TaskTrackerWebAPI.Controllers
@@ -22,10 +20,7 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet("{boardId:guid}")]
         public async Task<IActionResult> GetBoard(Guid boardId)
         {
-            if (!User.TryGetUserId(out var userId))
-                return UnprocessableEntity();
-            
-            var board = await _boardService.GetBoard(boardId, userId);
+            var board = await _boardService.GetBoard(boardId);
 
             if (board == null)
                 return NotFound();
@@ -36,19 +31,17 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet]
         public IActionResult GetBoards()
         {
-            if (!User.TryGetUserId(out var userId))
-                return UnprocessableEntity();
-            
-            return Ok(_boardService.GetBoards(userId).AsEnumerable().Select(ConvertToDto));
+            return Ok(_boardService.GetBoards().AsEnumerable().Select(ConvertToDto));
         }
 
         [HttpPost]
         public async Task<IActionResult> PostBoard([FromBody] BoardSummaryDto boardDto)
         {
-            if (!User.TryGetUserId(out var userId))
+            var board = await _boardService.CreateBoard(boardDto);
+            
+            if (board == null)
                 return UnprocessableEntity();
             
-            var board = await _boardService.CreateBoard(boardDto, userId);
             return CreatedAtAction(nameof(PostBoard), board.Id, ConvertToDto(board));
         }
 

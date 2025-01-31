@@ -6,25 +6,33 @@ namespace TaskTrackerWebAPI.Services
     public class BoardService
     {
         private readonly TodoContext _context;
+        private readonly UserService _userService;
 
-        public BoardService(TodoContext context)
+        public BoardService(TodoContext context, UserService userService)
         {
             _context = context;
+            _userService = userService;
         }
 
-        public Task<Board?> GetBoard(Guid boardId, Guid userId)
+        public async Task<Board?> GetBoard(Guid boardId)
         {
-            return GetBoards(userId).FirstOrDefaultAsync(board => board.Id == boardId);
+            return await GetBoards().FirstOrDefaultAsync(board => board.Id == boardId);
         }
 
-        public IQueryable<Board> GetBoards(Guid userId)
+        public IQueryable<Board> GetBoards()
         {
+            if (!_userService.TryGetUserId(out var userId))
+                return Enumerable.Empty<Board>().AsQueryable();
+            
             return _context.Boards.Where(b => b.OwnerId == userId).AsNoTracking();
         }
 
-        public async Task<Board> CreateBoard(BoardSummaryDto boardDto, Guid userId)
+        public async Task<Board?> CreateBoard(BoardSummaryDto boardDto)
         {
-            var board = new Board()
+            if (!_userService.TryGetUserId(out var userId))
+                return null;
+            
+            var board = new Board
             {
                 Id = Guid.NewGuid(),
                 OwnerId = userId,

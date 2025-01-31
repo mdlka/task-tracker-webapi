@@ -6,24 +6,40 @@ namespace TaskTrackerWebAPI.Services
     public class TodoItemsService
     {
         private readonly TodoContext _context;
+        private readonly UserService _userService;
 
-        public TodoItemsService(TodoContext context)
+        public TodoItemsService(TodoContext context, UserService userService)
         {
             _context = context;
+            _userService = userService;
         }
 
-        public Task<TodoItem?> GetItem(Guid id)
+        public async Task<TodoItem?> GetItem(Guid itemId)
         {
-            return _context.TodoItems.FirstOrDefaultAsync(item => item.Id == id);
+            if (!_userService.TryGetUserId(out var userId))
+                return null;
+            
+            return await _context.TodoItems
+                .Include(item => item.Board)
+                .FirstOrDefaultAsync(item => item.Id == itemId && item.Board.OwnerId == userId);
         }
 
         public IEnumerable<TodoItem> GetItems(Guid boardId)
         {
-            return _context.TodoItems.Where(item => item.BoardId == boardId).AsNoTracking();
+            if (!_userService.TryGetUserId(out var userId))
+                return Array.Empty<TodoItem>();
+            
+            return _context.TodoItems
+                .Include(item => item.Board)
+                .Where(item => item.BoardId == boardId && item.Board.OwnerId == userId)
+                .AsNoTracking();
         }
 
-        public async Task<TodoItem> CreateItem(TodoItemSummaryDto todoItemSummary, Guid boardId)
+        public async Task<TodoItem?> CreateItem(TodoItemSummaryDto todoItemSummary, Guid boardId)
         {
+            if (!await _userService.HasAccessToBoard(boardId))
+                return null;
+            
             var newTodoItem = new TodoItem
             {
                 Id = Guid.NewGuid(),
@@ -39,6 +55,9 @@ namespace TaskTrackerWebAPI.Services
 
         public async Task<bool> UpdateItem(TodoItemDto itemDto)
         {
+            if (!await _userService.HasAccessToTodoItem(itemDto.Id))
+                return false;
+            
             var item = await GetItem(itemDto.Id);
 
             if (item == null)
@@ -53,9 +72,12 @@ namespace TaskTrackerWebAPI.Services
             return true;
         }
 
-        public async Task<bool> DeleteItem(Guid id)
+        public async Task<bool> DeleteItem(Guid itemId)
         {
-            var item = await GetItem(id);
+            if (!await _userService.HasAccessToTodoItem(itemId))
+                return false;
+            
+            var item = await GetItem(itemId);
 
             if (item == null)
                 return false;

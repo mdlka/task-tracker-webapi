@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskTrackerWebAPI.Entities;
 using TaskTrackerWebAPI.Services;
 
@@ -6,6 +7,7 @@ namespace TaskTrackerWebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class TodoItemsController : ControllerBase
     {
         private readonly TodoItemsService _todoItemsService;
@@ -42,6 +44,10 @@ namespace TaskTrackerWebAPI.Controllers
                 return BadRequest();
 
             var newTodoItem = await _todoItemsService.CreateItem(todoItemSummary, boardId);
+
+            if (newTodoItem == null)
+                return Forbid();
+            
             return CreatedAtAction(nameof(PostItem), newTodoItem.Id, ConvertToDto(newTodoItem));
         }
 

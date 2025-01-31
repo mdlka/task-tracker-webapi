@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using TaskTrackerWebAPI.Extensions;
 using TaskTrackerWebAPI.Services;
 
@@ -21,6 +22,12 @@ namespace TaskTrackerWebAPI
             builder.Services.AddScoped<BoardService>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
+            builder.Services.AddScoped<UserService>();
+            
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddTransient(provider => 
+                provider.GetRequiredService<IHttpContextAccessor>().HttpContext?.User 
+                ?? new ClaimsPrincipal());
 
             var app = builder.Build();
 
