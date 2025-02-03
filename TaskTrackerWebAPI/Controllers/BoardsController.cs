@@ -20,12 +20,7 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet("{boardId:guid}")]
         public async Task<IActionResult> GetBoard(Guid boardId)
         {
-            var board = await _boardService.GetBoard(boardId);
-
-            if (board == null)
-                return NotFound();
-
-            return Ok(ConvertToDto(board));
+            return Ok(ConvertToDto(await _boardService.GetBoard(boardId)));
         }
 
         [HttpGet]

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskTrackerWebAPI.Entities;
+using TaskTrackerWebAPI.Exceptions;
 
 namespace TaskTrackerWebAPI.Services
 {
@@ -14,9 +15,17 @@ namespace TaskTrackerWebAPI.Services
             _userService = userService;
         }
 
-        public async Task<Board?> GetBoard(Guid boardId)
+        public async Task<Board> GetBoard(Guid boardId)
         {
-            return await GetBoards().FirstOrDefaultAsync(board => board.Id == boardId);
+            var board = await _context.Boards.AsNoTracking().FirstOrDefaultAsync(b => b.Id == boardId);
+
+            if (board == null)
+                throw new NotFoundException();
+
+            if (!_userService.TryGetUserId(out var userId) || board.OwnerId != userId)
+                throw new ForbiddenAccessException();
+            
+            return board;
         }
 
         public IQueryable<Board> GetBoards()

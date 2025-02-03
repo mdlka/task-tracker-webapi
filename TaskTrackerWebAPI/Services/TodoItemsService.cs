@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskTrackerWebAPI.Entities;
+using TaskTrackerWebAPI.Exceptions;
 
 namespace TaskTrackerWebAPI.Services
 {
@@ -14,14 +15,19 @@ namespace TaskTrackerWebAPI.Services
             _userService = userService;
         }
 
-        public async Task<TodoItem?> GetItem(Guid itemId)
+        public async Task<TodoItem> GetItem(Guid itemId)
         {
-            if (!_userService.TryGetUserId(out var userId))
-                return null;
-            
-            return await _context.TodoItems
+            var item = await _context.TodoItems
                 .Include(item => item.Board)
-                .FirstOrDefaultAsync(item => item.Id == itemId && item.Board.OwnerId == userId);
+                .FirstOrDefaultAsync(item => item.Id == itemId);
+
+            if (item == null)
+                throw new NotFoundException();
+            
+            if (!_userService.TryGetUserId(out var userId) || item.Board.OwnerId != userId)
+                throw new ForbiddenAccessException();
+            
+            return item;
         }
 
         public IEnumerable<TodoItem> GetItems(Guid boardId)
@@ -35,10 +41,10 @@ namespace TaskTrackerWebAPI.Services
                 .AsNoTracking();
         }
 
-        public async Task<TodoItem?> CreateItem(TodoItemSummaryDto todoItemSummary, Guid boardId)
+        public async Task<TodoItem> CreateItem(TodoItemSummaryDto todoItemSummary, Guid boardId)
         {
             if (!await _userService.HasAccessToBoard(boardId))
-                return null;
+                throw new ForbiddenAccessException();
             
             var newTodoItem = new TodoItem
             {
@@ -53,39 +59,29 @@ namespace TaskTrackerWebAPI.Services
             return newTodoItem;
         }
 
-        public async Task<bool> UpdateItem(TodoItemDto itemDto)
+        public async Task UpdateItem(TodoItemDto itemDto)
         {
             if (!await _userService.HasAccessToTodoItem(itemDto.Id))
-                return false;
+                throw new ForbiddenAccessException();
             
             var item = await GetItem(itemDto.Id);
-
-            if (item == null)
-                return false;
 
             item.Name = itemDto.Name;
             item.State = itemDto.State;
 
             _context.TodoItems.Update(item);
             await _context.SaveChangesAsync();
-            
-            return true;
         }
 
-        public async Task<bool> DeleteItem(Guid itemId)
+        public async Task DeleteItem(Guid itemId)
         {
             if (!await _userService.HasAccessToTodoItem(itemId))
-                return false;
+                throw new ForbiddenAccessException();
             
             var item = await GetItem(itemId);
 
-            if (item == null)
-                return false;
-
             _context.TodoItems.Remove(item);
             await _context.SaveChangesAsync();
-            
-            return true;
         }
     }
 }

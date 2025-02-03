@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using TaskTrackerWebAPI.Extensions;
+using TaskTrackerWebAPI.Filters;
 using TaskTrackerWebAPI.Services;
 
 namespace TaskTrackerWebAPI
@@ -10,7 +11,10 @@ namespace TaskTrackerWebAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add(new ApiExceptionFilterAttribute());
+            });
 
             builder.Services.ConfigureCors();
             builder.Services.AddSwagger();
