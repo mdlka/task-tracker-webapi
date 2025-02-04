@@ -7,10 +7,10 @@ namespace TaskTrackerWebAPI.Entities
         [EmailAddress]
         public string Email { get; set; }
         
-        [MinLength(6)]
+        [StringLength(50, MinimumLength = 6)]
         public string Password { get; set; }
         
-        [MinLength(4)]
+        [StringLength(50, MinimumLength = 4)]
         public string Name { get; set; }
     }
 }

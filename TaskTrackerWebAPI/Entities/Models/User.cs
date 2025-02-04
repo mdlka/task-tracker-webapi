@@ -10,7 +10,6 @@ namespace TaskTrackerWebAPI.Entities
         [Column(name: "user_id")]
         public Guid Id { get; set; }
         
-        [EmailAddress]
         [Column(name: "email")]
         public string Email { get; set; }
         
