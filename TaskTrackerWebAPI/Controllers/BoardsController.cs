@@ -26,18 +26,14 @@ namespace TaskTrackerWebAPI.Controllers
         [HttpGet]
         public IActionResult GetBoards()
         {
-            return Ok(_boardService.GetBoards().AsEnumerable().Select(ConvertToDto));
+            return Ok(_boardService.GetBoards().Select(ConvertToDto));
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostBoard([FromBody] BoardSummaryDto boardDto)
+        public async Task<IActionResult> CreateBoard([FromBody] BoardSummaryDto boardDto)
         {
-            var board = await _boardService.CreateBoard(boardDto);
-            
-            if (board == null)
-                return UnprocessableEntity();
-            
-            return CreatedAtAction(nameof(PostBoard), board.Id, ConvertToDto(board));
+            var newBoard = await _boardService.CreateBoard(boardDto);
+            return CreatedAtAction(nameof(CreateBoard), newBoard.Id, ConvertToDto(newBoard));
         }
 
         private static BoardDto ConvertToDto(Board board)

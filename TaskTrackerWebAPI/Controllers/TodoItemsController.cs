@@ -30,14 +30,14 @@ namespace TaskTrackerWebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostItem([FromQuery] Guid boardId, [FromBody] TodoItemSummaryDto todoItemSummary)
+        public async Task<IActionResult> CreateItem([FromQuery] Guid boardId, [FromBody] TodoItemSummaryDto todoItemSummary)
         {
             var newTodoItem = await _todoItemsService.CreateItem(todoItemSummary, boardId);
-            return CreatedAtAction(nameof(PostItem), newTodoItem.Id, ConvertToDto(newTodoItem));
+            return CreatedAtAction(nameof(CreateItem), newTodoItem.Id, ConvertToDto(newTodoItem));
         }
 
         [HttpPut]
-        public async Task<IActionResult> PutItem([FromBody] TodoItemDto todoItem)
+        public async Task<IActionResult> UpdateItem([FromBody] TodoItemDto todoItem)
         {
             await _todoItemsService.UpdateItem(todoItem); 
             return NoContent();

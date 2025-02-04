@@ -9,7 +9,8 @@ namespace TaskTrackerWebAPI.Filters
         private readonly Dictionary<Type, Func<IActionResult>> _resultFactories = new()
         {
             { typeof(NotFoundException), () => new NotFoundResult() },
-            { typeof(ForbiddenAccessException), () => new ForbidResult() }
+            { typeof(ForbiddenAccessException), () => new ForbidResult() },
+            { typeof(UnauthorizedException), () => new UnauthorizedResult() }
         };
         
         public override void OnException(ExceptionContext context)

@@ -7,12 +7,12 @@ namespace TaskTrackerWebAPI.Services
     public class BoardService
     {
         private readonly TodoContext _context;
-        private readonly UserService _userService;
+        private readonly UserContext _userContext;
 
-        public BoardService(TodoContext context, UserService userService)
+        public BoardService(TodoContext context, UserContext userContext)
         {
             _context = context;
-            _userService = userService;
+            _userContext = userContext;
         }
 
         public async Task<Board> GetBoard(Guid boardId)
@@ -21,30 +21,33 @@ namespace TaskTrackerWebAPI.Services
 
             if (board == null)
                 throw new NotFoundException();
+            
+            if (_userContext.IsAnonymous)
+                throw new UnauthorizedException();
 
-            if (!_userService.TryGetUserId(out var userId) || board.OwnerId != userId)
+            if (board.OwnerId != _userContext.GetUserId())
                 throw new ForbiddenAccessException();
             
             return board;
         }
 
-        public IQueryable<Board> GetBoards()
+        public IEnumerable<Board> GetBoards()
         {
-            if (!_userService.TryGetUserId(out var userId))
-                return Enumerable.Empty<Board>().AsQueryable();
+            if (_userContext.IsAnonymous)
+                throw new UnauthorizedException();
             
-            return _context.Boards.Where(b => b.OwnerId == userId).AsNoTracking();
+            return _context.Boards.Where(b => b.OwnerId == _userContext.GetUserId()).AsNoTracking();
         }
 
-        public async Task<Board?> CreateBoard(BoardSummaryDto boardDto)
+        public async Task<Board> CreateBoard(BoardSummaryDto boardDto)
         {
-            if (!_userService.TryGetUserId(out var userId))
-                return null;
+            if (_userContext.IsAnonymous)
+                throw new UnauthorizedException();
             
             var board = new Board
             {
                 Id = Guid.NewGuid(),
-                OwnerId = userId,
+                OwnerId = _userContext.GetUserId(),
                 Name = boardDto.Name
             };
 

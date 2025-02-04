@@ -7,12 +7,12 @@ namespace TaskTrackerWebAPI.Services
     public class TodoItemsService
     {
         private readonly TodoContext _context;
-        private readonly UserService _userService;
+        private readonly UserContext _userContext;
 
-        public TodoItemsService(TodoContext context, UserService userService)
+        public TodoItemsService(TodoContext context, UserContext userContext)
         {
             _context = context;
-            _userService = userService;
+            _userContext = userContext;
         }
 
         public async Task<TodoItem> GetItem(Guid itemId)
@@ -23,8 +23,11 @@ namespace TaskTrackerWebAPI.Services
 
             if (item == null)
                 throw new NotFoundException();
+
+            if (_userContext.IsAnonymous)
+                throw new UnauthorizedException();
             
-            if (!_userService.TryGetUserId(out var userId) || item.Board.OwnerId != userId)
+            if (item.Board.OwnerId != _userContext.GetUserId())
                 throw new ForbiddenAccessException();
             
             return item;
@@ -32,18 +35,18 @@ namespace TaskTrackerWebAPI.Services
 
         public IEnumerable<TodoItem> GetItems(Guid boardId)
         {
-            if (!_userService.TryGetUserId(out var userId))
-                return Array.Empty<TodoItem>();
+            if (_userContext.IsAnonymous)
+                throw new UnauthorizedException();
             
             return _context.TodoItems
                 .Include(item => item.Board)
-                .Where(item => item.BoardId == boardId && item.Board.OwnerId == userId)
+                .Where(item => item.BoardId == boardId && item.Board.OwnerId == _userContext.GetUserId())
                 .AsNoTracking();
         }
 
         public async Task<TodoItem> CreateItem(TodoItemSummaryDto todoItemSummary, Guid boardId)
         {
-            if (!await _userService.HasAccessToBoard(boardId))
+            if (!await HasAccessToBoard(boardId))
                 throw new ForbiddenAccessException();
             
             var newTodoItem = new TodoItem
@@ -61,9 +64,6 @@ namespace TaskTrackerWebAPI.Services
 
         public async Task UpdateItem(TodoItemDto itemDto)
         {
-            if (!await _userService.HasAccessToTodoItem(itemDto.Id))
-                throw new ForbiddenAccessException();
-            
             var item = await GetItem(itemDto.Id);
 
             item.Name = itemDto.Name;
@@ -75,13 +75,19 @@ namespace TaskTrackerWebAPI.Services
 
         public async Task DeleteItem(Guid itemId)
         {
-            if (!await _userService.HasAccessToTodoItem(itemId))
-                throw new ForbiddenAccessException();
-            
             var item = await GetItem(itemId);
 
             _context.TodoItems.Remove(item);
             await _context.SaveChangesAsync();
+        }
+        
+        private async Task<bool> HasAccessToBoard(Guid boardId)
+        {
+            if (_userContext.IsAnonymous)
+                return false;
+
+            var board = await _context.Boards.FirstOrDefaultAsync(board => board.Id == boardId);
+            return board != null && board.OwnerId == _userContext.GetUserId();
         }
     }
 }
