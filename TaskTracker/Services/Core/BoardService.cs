@@ -39,7 +39,7 @@ namespace TaskTracker.Services
             return _context.Boards.Where(b => b.OwnerId == _currentUserService.GetUserId()).AsNoTracking();
         }
 
-        public async Task<Board> CreateBoard(BoardSummaryDto boardDto)
+        public async Task<Board> CreateBoard(string boardName)
         {
             if (_currentUserService.IsAnonymous)
                 throw new UnauthorizedException();
@@ -48,7 +48,7 @@ namespace TaskTracker.Services
             {
                 Id = Guid.NewGuid(),
                 OwnerId = _currentUserService.GetUserId(),
-                Name = boardDto.Name
+                Name = boardName
             };
 
             await _context.AddAsync(board);

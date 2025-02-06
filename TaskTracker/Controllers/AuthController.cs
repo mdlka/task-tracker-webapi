@@ -18,24 +18,22 @@ namespace TaskTracker.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegistrationDto registrationDto)
         {
-            return await _authService.Register(registrationDto) ? Ok() : BadRequest();
+            return await _authService.Register(registrationDto.Email, registrationDto.Name, registrationDto.Password) 
+                ? Ok() 
+                : BadRequest();
         }
         
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserCredentialsDto userCredentialsDto)
+        public async Task<IActionResult> Login([FromBody] UserCredentialsDto userCredentials)
         {
-            var token = await _authService.Login(userCredentialsDto);
-
-            if (token == null)
-                return Unauthorized();
-
+            var token = await _authService.Login(userCredentials.Email, userCredentials.Password);
             return Ok(token);
         }
 
         [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] TokensDto tokensDto)
+        public async Task<IActionResult> Refresh([FromBody] Tokens tokens)
         {
-            var token = await _authService.Refresh(tokensDto);
+            var token = await _authService.Refresh(tokens);
 
             if (token == null)
                 return BadRequest();

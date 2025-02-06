@@ -44,7 +44,7 @@ namespace TaskTracker.Services
                 .AsNoTracking();
         }
 
-        public async Task<TodoItem> CreateItem(TodoItemSummaryDto todoItemSummary, Guid boardId)
+        public async Task<TodoItem> CreateItem(string itemName, Guid boardId)
         {
             if (!await HasAccessToBoard(boardId))
                 throw new ForbiddenAccessException();
@@ -52,7 +52,7 @@ namespace TaskTracker.Services
             var newTodoItem = new TodoItem
             {
                 Id = Guid.NewGuid(),
-                Name = todoItemSummary.Name,
+                Name = itemName,
                 BoardId = boardId
             };
 
@@ -62,12 +62,12 @@ namespace TaskTracker.Services
             return newTodoItem;
         }
 
-        public async Task UpdateItem(TodoItemDto itemDto)
+        public async Task UpdateItem(Guid itemId, string newItemName, TodoItemState newItemState)
         {
-            var item = await GetItem(itemDto.Id);
+            var item = await GetItem(itemId);
 
-            item.Name = itemDto.Name;
-            item.State = itemDto.State;
+            item.Name = newItemName;
+            item.State = newItemState;
 
             _context.TodoItems.Update(item);
             await _context.SaveChangesAsync();

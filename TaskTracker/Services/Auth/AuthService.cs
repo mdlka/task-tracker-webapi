@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using TaskTracker.Entities;
+using TaskTracker.Exceptions;
 
 namespace TaskTracker.Services
 {
@@ -15,9 +16,9 @@ namespace TaskTracker.Services
             _context = context;
         }
 
-        public async Task<bool> Register(RegistrationDto registrationDto)
+        public async Task<bool> Register(string email, string name, string password)
         {
-            if (await _context.Users.FirstOrDefaultAsync(u => u.Email == registrationDto.Email) != null)
+            if (await _context.Users.FirstOrDefaultAsync(u => u.Email == email) != null)
                 return false;
 
             var userId = Guid.NewGuid();
@@ -25,16 +26,16 @@ namespace TaskTracker.Services
             await _context.Users.AddAsync(new User
             {
                 Id = userId,
-                Email = registrationDto.Email,
-                Name = registrationDto.Name,
+                Email = email,
+                Name = name,
                 CreatedAt = DateTime.UtcNow
             });
             
             await _context.UsersCredentials.AddAsync(new UserCredentials()
             {
                 UserId = userId,
-                Login = registrationDto.Email,
-                Password = registrationDto.Password,
+                Login = email,
+                Password = password,
                 Version = 1
             });
 
@@ -43,13 +44,13 @@ namespace TaskTracker.Services
             return true;
         }
 
-        public async Task<TokensDto?> Login(UserCredentialsDto userCredentialsDto)
+        public async Task<Tokens> Login(string email, string password)
         {
             var userCredentials = await _context.UsersCredentials.FirstOrDefaultAsync(u =>
-                u.Login == userCredentialsDto.Email && u.Password == userCredentialsDto.Password);
+                u.Login == email && u.Password == password);
 
             if (userCredentials == null)
-                return null;
+                throw new UnauthorizedException();
 
             var refreshToken = _tokenService.CreateRefreshToken();
             var oldRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userCredentials.UserId);
@@ -72,14 +73,14 @@ namespace TaskTracker.Services
 
             await _context.SaveChangesAsync();
             
-            return new TokensDto
+            return new Tokens
             {
                 AccessToken = _tokenService.CreateAccessToken(userCredentials.UserId),
                 RefreshToken = refreshToken.Token
             };
         }
 
-        public async Task<TokensDto?> Refresh(TokensDto tokens)
+        public async Task<Tokens?> Refresh(Tokens tokens)
         {
             var principal = _tokenService.GetPrincipalFromExpiredToken(tokens.AccessToken);
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
@@ -103,7 +104,7 @@ namespace TaskTracker.Services
             _context.RefreshTokens.Update(oldRefreshToken);
             await _context.SaveChangesAsync();
 
-            return new TokensDto
+            return new Tokens
             {
                 AccessToken = _tokenService.CreateAccessToken(oldRefreshToken.UserId),
                 RefreshToken = newRefreshToken.Token

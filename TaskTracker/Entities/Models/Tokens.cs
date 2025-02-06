@@ -1,6 +1,6 @@
 ﻿namespace TaskTracker.Entities
 {
-    public class TokensDto
+    public class Tokens
     {
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }

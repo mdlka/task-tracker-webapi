@@ -30,9 +30,9 @@ namespace TaskTracker.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBoard([FromBody] BoardSummaryDto boardDto)
+        public async Task<IActionResult> CreateBoard([FromBody] BoardSummaryDto boardSummary)
         {
-            var newBoard = await _boardService.CreateBoard(boardDto);
+            var newBoard = await _boardService.CreateBoard(boardSummary.Name);
             return CreatedAtAction(nameof(CreateBoard), newBoard.Id, ConvertToDto(newBoard));
         }
 
