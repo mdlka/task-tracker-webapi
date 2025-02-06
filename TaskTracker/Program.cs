@@ -26,7 +26,7 @@ namespace TaskTracker
             builder.Services.AddScoped<BoardService>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
-            builder.Services.AddScoped<UserContext>();
+            builder.Services.AddScoped<CurrentUserService>();
             
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddTransient(provider => 

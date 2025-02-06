@@ -7,12 +7,12 @@ namespace TaskTracker.Services
     public class BoardService
     {
         private readonly TodoContext _context;
-        private readonly UserContext _userContext;
+        private readonly CurrentUserService _currentUserService;
 
-        public BoardService(TodoContext context, UserContext userContext)
+        public BoardService(TodoContext context, CurrentUserService currentUserService)
         {
             _context = context;
-            _userContext = userContext;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Board> GetBoard(Guid boardId)
@@ -22,10 +22,10 @@ namespace TaskTracker.Services
             if (board == null)
                 throw new NotFoundException();
             
-            if (_userContext.IsAnonymous)
+            if (_currentUserService.IsAnonymous)
                 throw new UnauthorizedException();
 
-            if (board.OwnerId != _userContext.GetUserId())
+            if (board.OwnerId != _currentUserService.GetUserId())
                 throw new ForbiddenAccessException();
             
             return board;
@@ -33,21 +33,21 @@ namespace TaskTracker.Services
 
         public IEnumerable<Board> GetBoards()
         {
-            if (_userContext.IsAnonymous)
+            if (_currentUserService.IsAnonymous)
                 throw new UnauthorizedException();
             
-            return _context.Boards.Where(b => b.OwnerId == _userContext.GetUserId()).AsNoTracking();
+            return _context.Boards.Where(b => b.OwnerId == _currentUserService.GetUserId()).AsNoTracking();
         }
 
         public async Task<Board> CreateBoard(BoardSummaryDto boardDto)
         {
-            if (_userContext.IsAnonymous)
+            if (_currentUserService.IsAnonymous)
                 throw new UnauthorizedException();
             
             var board = new Board
             {
                 Id = Guid.NewGuid(),
-                OwnerId = _userContext.GetUserId(),
+                OwnerId = _currentUserService.GetUserId(),
                 Name = boardDto.Name
             };
 

@@ -2,12 +2,12 @@
 
 namespace TaskTracker.Services
 {
-    public class UserContext
+    public class CurrentUserService
     {
         private readonly ClaimsPrincipal _user;
         private Guid? _userId;
 
-        public UserContext(ClaimsPrincipal user)
+        public CurrentUserService(ClaimsPrincipal user)
         {
             _user = user;
         }

@@ -7,12 +7,12 @@ namespace TaskTracker.Services
     public class TodoItemsService
     {
         private readonly TodoContext _context;
-        private readonly UserContext _userContext;
+        private readonly CurrentUserService _currentUserService;
 
-        public TodoItemsService(TodoContext context, UserContext userContext)
+        public TodoItemsService(TodoContext context, CurrentUserService currentUserService)
         {
             _context = context;
-            _userContext = userContext;
+            _currentUserService = currentUserService;
         }
 
         public async Task<TodoItem> GetItem(Guid itemId)
@@ -24,10 +24,10 @@ namespace TaskTracker.Services
             if (item == null)
                 throw new NotFoundException();
 
-            if (_userContext.IsAnonymous)
+            if (_currentUserService.IsAnonymous)
                 throw new UnauthorizedException();
             
-            if (item.Board.OwnerId != _userContext.GetUserId())
+            if (item.Board.OwnerId != _currentUserService.GetUserId())
                 throw new ForbiddenAccessException();
             
             return item;
@@ -35,12 +35,12 @@ namespace TaskTracker.Services
 
         public IEnumerable<TodoItem> GetItems(Guid boardId)
         {
-            if (_userContext.IsAnonymous)
+            if (_currentUserService.IsAnonymous)
                 throw new UnauthorizedException();
             
             return _context.TodoItems
                 .Include(item => item.Board)
-                .Where(item => item.BoardId == boardId && item.Board.OwnerId == _userContext.GetUserId())
+                .Where(item => item.BoardId == boardId && item.Board.OwnerId == _currentUserService.GetUserId())
                 .AsNoTracking();
         }
 
@@ -83,11 +83,11 @@ namespace TaskTracker.Services
         
         private async Task<bool> HasAccessToBoard(Guid boardId)
         {
-            if (_userContext.IsAnonymous)
+            if (_currentUserService.IsAnonymous)
                 return false;
 
             var board = await _context.Boards.FirstOrDefaultAsync(board => board.Id == boardId);
-            return board != null && board.OwnerId == _userContext.GetUserId();
+            return board != null && board.OwnerId == _currentUserService.GetUserId();
         }
     }
 }
