@@ -4,7 +4,7 @@ using TaskTracker.Entities;
 
 namespace TaskTracker.Repositories
 {
-    public abstract class RepositoryBase<TEntity> : IRepositoryBase<TEntity> where TEntity : class
+    public class RepositoryBase<TEntity> : IRepositoryBase<TEntity> where TEntity : class
     {
         public RepositoryBase(TodoContext todoContext)
         {

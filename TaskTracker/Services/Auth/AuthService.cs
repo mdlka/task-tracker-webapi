@@ -1,29 +1,29 @@
 ﻿using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
 using TaskTracker.Entities;
 using TaskTracker.Exceptions;
+using TaskTracker.Repositories;
 
 namespace TaskTracker.Services
 {
     public class AuthService
     {
         private readonly TokenService _tokenService;
-        private readonly TodoContext _context;
+        private readonly IAuthRepositoryWrapper _repositoryWrapper;
 
-        public AuthService(TokenService tokenService, TodoContext context)
+        public AuthService(IAuthRepositoryWrapper repositoryWrapper, TokenService tokenService)
         {
             _tokenService = tokenService;
-            _context = context;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         public async Task<bool> Register(string email, string name, string password)
         {
-            if (await _context.Users.FirstOrDefaultAsync(u => u.Email == email) != null)
+            if (await _repositoryWrapper.Users.FirstOrDefault(u => u.Email == email) != null)
                 return false;
 
             var userId = Guid.NewGuid();
 
-            await _context.Users.AddAsync(new User
+            await _repositoryWrapper.Users.Add(new User
             {
                 Id = userId,
                 Email = email,
@@ -31,7 +31,7 @@ namespace TaskTracker.Services
                 CreatedAt = DateTime.UtcNow
             });
             
-            await _context.UsersCredentials.AddAsync(new UserCredentials()
+            await _repositoryWrapper.UserCredentials.Add(new UserCredentials
             {
                 UserId = userId,
                 Login = email,
@@ -39,25 +39,25 @@ namespace TaskTracker.Services
                 Version = 1
             });
 
-            await _context.SaveChangesAsync();
+            await _repositoryWrapper.Save();
 
             return true;
         }
 
         public async Task<Tokens> Login(string email, string password)
         {
-            var userCredentials = await _context.UsersCredentials.FirstOrDefaultAsync(u =>
+            var userCredentials = await _repositoryWrapper.UserCredentials.FirstOrDefault(u =>
                 u.Login == email && u.Password == password);
 
             if (userCredentials == null)
                 throw new UnauthorizedException();
 
             var refreshToken = _tokenService.CreateRefreshToken();
-            var oldRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userCredentials.UserId);
+            var oldRefreshToken = await _repositoryWrapper.RefreshTokens.FirstOrDefault(rt => rt.UserId == userCredentials.UserId);
 
             if (oldRefreshToken == null)
             {
-                await _context.RefreshTokens.AddAsync(new RefreshToken
+                await _repositoryWrapper.RefreshTokens.Add(new RefreshToken
                 {
                     UserId = userCredentials.UserId,
                     Token = refreshToken.Token,
@@ -68,10 +68,10 @@ namespace TaskTracker.Services
             {
                 oldRefreshToken.Token = refreshToken.Token;
                 oldRefreshToken.ExpiresAt = refreshToken.ExpiresAt;
-                _context.RefreshTokens.Update(oldRefreshToken);
+                _repositoryWrapper.RefreshTokens.Update(oldRefreshToken);
             }
 
-            await _context.SaveChangesAsync();
+            await _repositoryWrapper.Save();
             
             return new Tokens
             {
@@ -89,7 +89,7 @@ namespace TaskTracker.Services
                 return null;
             
             var userId = Guid.Parse(userIdClaim.Value);
-            var oldRefreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(token => token.UserId == userId);
+            var oldRefreshToken = await _repositoryWrapper.RefreshTokens.FirstOrDefault(token => token.UserId == userId);
 
             if (oldRefreshToken == null)
                 return null;
@@ -101,8 +101,8 @@ namespace TaskTracker.Services
             oldRefreshToken.Token = newRefreshToken.Token;
             oldRefreshToken.ExpiresAt = newRefreshToken.ExpiresAt;
 
-            _context.RefreshTokens.Update(oldRefreshToken);
-            await _context.SaveChangesAsync();
+            _repositoryWrapper.RefreshTokens.Update(oldRefreshToken);
+            await _repositoryWrapper.Save();
 
             return new Tokens
             {

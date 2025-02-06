@@ -1,9 +1,11 @@
-﻿namespace TaskTracker.Repositories
+﻿using TaskTracker.Entities;
+
+namespace TaskTracker.Repositories
 {
     public interface ICoreRepositoryWrapper
     {
-        IBoardRepository Boards { get; }
-        ITodoItemRepository Items { get; }
+        IRepositoryBase<Board> Boards { get; }
+        IRepositoryBase<TodoItem> Items { get; }
 
         Task Save();
     }

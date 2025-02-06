@@ -30,6 +30,7 @@ namespace TaskTracker
             builder.Services.AddScoped<CurrentUserService>();
 
             builder.Services.AddScoped<ICoreRepositoryWrapper, CoreRepositoryWrapper>();
+            builder.Services.AddScoped<IAuthRepositoryWrapper, AuthRepositoryWrapper>();
             
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddTransient(provider => 
