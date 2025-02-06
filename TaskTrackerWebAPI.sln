@@ -1,6 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker", "TaskTracker\TaskTracker.csproj", "{3AC3A360-3422-434A-A09F-E6B3C4B701D1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker.WebAPI", "TaskTracker.WebAPI\TaskTracker.WebAPI.csproj", "{3AC3A360-3422-434A-A09F-E6B3C4B701D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker.Core", "TaskTracker.Core\TaskTracker.Core.csproj", "{14141342-73A8-49D0-BECC-84B368C80D7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker.Infrastructure", "TaskTracker.Infrastructure\TaskTracker.Infrastructure.csproj", "{55F6060A-F2A6-469C-A748-33D85D2ED852}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +16,13 @@ Global
 		{3AC3A360-3422-434A-A09F-E6B3C4B701D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AC3A360-3422-434A-A09F-E6B3C4B701D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AC3A360-3422-434A-A09F-E6B3C4B701D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14141342-73A8-49D0-BECC-84B368C80D7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14141342-73A8-49D0-BECC-84B368C80D7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14141342-73A8-49D0-BECC-84B368C80D7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14141342-73A8-49D0-BECC-84B368C80D7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55F6060A-F2A6-469C-A748-33D85D2ED852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55F6060A-F2A6-469C-A748-33D85D2ED852}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55F6060A-F2A6-469C-A748-33D85D2ED852}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55F6060A-F2A6-469C-A748-33D85D2ED852}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
