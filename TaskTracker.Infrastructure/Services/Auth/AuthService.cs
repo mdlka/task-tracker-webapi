@@ -35,7 +35,7 @@ namespace TaskTracker.Infrastructure.Services
             {
                 UserId = userId,
                 Login = email,
-                Password = password,
+                PasswordHash = password,
                 Version = 1
             });
 
@@ -46,10 +46,10 @@ namespace TaskTracker.Infrastructure.Services
 
         public async Task<Tokens> Login(string email, string password)
         {
-            var userCredentials = await _repositoryWrapper.UserCredentials.FirstOrDefault(u =>
-                u.Login == email && u.Password == password);
+            var userCredentials = await _repositoryWrapper.UserCredentials
+                .FirstOrDefault(u => u.Login == email);
 
-            if (userCredentials == null)
+            if (userCredentials == null || password != userCredentials.PasswordHash)
                 throw new UnauthorizedException();
 
             var refreshToken = _tokenService.CreateRefreshToken();

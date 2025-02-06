@@ -14,8 +14,8 @@ namespace TaskTracker.Core.Models
         [Column(name: "login")]
         public string Login { get; set; }
 
-        [Column(name: "password")]
-        public string Password { get; set; }
+        [Column(name: "password_hash")]
+        public string PasswordHash { get; set; }
         
         [Column(name: "version")]
         public int Version { get; set; }
