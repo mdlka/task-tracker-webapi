@@ -3,9 +3,9 @@ using TaskTracker.Core.Models;
 
 namespace TaskTracker.Infrastructure.Data
 {
-    public class TodoContext : DbContext
+    public class ApplicationDbContext : DbContext
     {
-        public TodoContext(DbContextOptions<TodoContext> options) 
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
             : base(options)
         { }
         

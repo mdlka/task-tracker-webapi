@@ -11,7 +11,7 @@ using TaskTracker.Infrastructure.Data;
 
 namespace TaskTracker.Migrations
 {
-    [DbContext(typeof(TodoContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250129114435_InitialMigration")]
     partial class InitialMigration
     {

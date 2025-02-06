@@ -7,53 +7,53 @@ namespace TaskTracker.Infrastructure.Repositories
 {
     public class RepositoryBase<TEntity> : IRepositoryBase<TEntity> where TEntity : class
     {
-        public RepositoryBase(TodoContext todoContext)
+        public RepositoryBase(ApplicationDbContext applicationDbContext)
         {
-            TodoContext = todoContext;
+            ApplicationDbContext = applicationDbContext;
         }
 
-        private TodoContext TodoContext { get; set; }
+        private ApplicationDbContext ApplicationDbContext { get; set; }
 
         public IQueryable<TEntity> FindAll()
         {
-            return TodoContext.Set<TEntity>().AsNoTracking();
+            return ApplicationDbContext.Set<TEntity>().AsNoTracking();
         }
 
         public IQueryable<TEntity> FindAll(Expression<Func<TEntity, bool>> expression)
         {
-            return TodoContext.Set<TEntity>().Where(expression).AsNoTracking();
+            return ApplicationDbContext.Set<TEntity>().Where(expression).AsNoTracking();
         }
 
         public IQueryable<TEntity> FindAll<TProperty>(Expression<Func<TEntity, bool>> expression, 
             Expression<Func<TEntity, TProperty>> with)
         {
-            return TodoContext.Set<TEntity>().Include(with).Where(expression).AsNoTracking();
+            return ApplicationDbContext.Set<TEntity>().Include(with).Where(expression).AsNoTracking();
         }
 
         public async Task<TEntity?> FirstOrDefault(Expression<Func<TEntity, bool>> expression)
         {
-            return await TodoContext.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(expression);
+            return await ApplicationDbContext.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(expression);
         }
 
         public async Task<TEntity?> FirstOrDefault<TProperty>(Expression<Func<TEntity, bool>> expression, 
             Expression<Func<TEntity, TProperty>> with)
         {
-            return await TodoContext.Set<TEntity>().Include(with).AsNoTracking().FirstOrDefaultAsync(expression);
+            return await ApplicationDbContext.Set<TEntity>().Include(with).AsNoTracking().FirstOrDefaultAsync(expression);
         }
 
         public async Task Add(TEntity entity)
         {
-            await TodoContext.Set<TEntity>().AddAsync(entity);
+            await ApplicationDbContext.Set<TEntity>().AddAsync(entity);
         }
 
         public void Update(TEntity entity)
         {
-            TodoContext.Set<TEntity>().Update(entity);
+            ApplicationDbContext.Set<TEntity>().Update(entity);
         }
 
         public void Delete(TEntity entity)
         {
-            TodoContext.Set<TEntity>().Remove(entity);
+            ApplicationDbContext.Set<TEntity>().Remove(entity);
         }
     }
 }

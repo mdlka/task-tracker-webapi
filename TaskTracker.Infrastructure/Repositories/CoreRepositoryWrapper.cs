@@ -6,13 +6,13 @@ namespace TaskTracker.Infrastructure.Repositories
 {
     public class CoreRepositoryWrapper : ICoreRepositoryWrapper
     {
-        private readonly TodoContext _todoContext;
+        private readonly ApplicationDbContext _applicationDbContext;
 
-        public CoreRepositoryWrapper(TodoContext todoContext)
+        public CoreRepositoryWrapper(ApplicationDbContext applicationDbContext)
         {
-            _todoContext = todoContext;
-            Boards = new RepositoryBase<Board>(todoContext);
-            Items = new RepositoryBase<TodoItem>(todoContext);
+            _applicationDbContext = applicationDbContext;
+            Boards = new RepositoryBase<Board>(applicationDbContext);
+            Items = new RepositoryBase<TodoItem>(applicationDbContext);
         }
 
         public IRepositoryBase<Board> Boards { get; }
@@ -20,7 +20,7 @@ namespace TaskTracker.Infrastructure.Repositories
 
         public async Task Save()
         {
-            await _todoContext.SaveChangesAsync();
+            await _applicationDbContext.SaveChangesAsync();
         }
     }
 }

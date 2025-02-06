@@ -6,14 +6,14 @@ namespace TaskTracker.Infrastructure.Repositories
 {
     public class AuthRepositoryWrapper : IAuthRepositoryWrapper
     {
-        private readonly TodoContext _todoContext;
+        private readonly ApplicationDbContext _applicationDbContext;
 
-        public AuthRepositoryWrapper(TodoContext todoContext)
+        public AuthRepositoryWrapper(ApplicationDbContext applicationDbContext)
         {
-            _todoContext = todoContext;
-            Users = new RepositoryBase<User>(todoContext);
-            UserCredentials = new RepositoryBase<UserCredentials>(todoContext);
-            RefreshTokens = new RepositoryBase<RefreshToken>(todoContext);
+            _applicationDbContext = applicationDbContext;
+            Users = new RepositoryBase<User>(applicationDbContext);
+            UserCredentials = new RepositoryBase<UserCredentials>(applicationDbContext);
+            RefreshTokens = new RepositoryBase<RefreshToken>(applicationDbContext);
         }
 
         public IRepositoryBase<User> Users { get; }
@@ -22,7 +22,7 @@ namespace TaskTracker.Infrastructure.Repositories
 
         public async Task Save()
         {
-            await _todoContext.SaveChangesAsync();
+            await _applicationDbContext.SaveChangesAsync();
         }
     }
 }

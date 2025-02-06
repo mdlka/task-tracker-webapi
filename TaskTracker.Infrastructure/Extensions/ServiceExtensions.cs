@@ -57,7 +57,7 @@ namespace TaskTracker.Infrastructure.Extensions
 
         public static void AddDbContext(this IServiceCollection services, IConfiguration config)
         {
-            services.AddDbContext<TodoContext>(options => 
+            services.AddDbContext<ApplicationDbContext>(options => 
                 options.UseNpgsql(config.GetConnectionString("DefaultPostgresqlConnection")));
         }
 
