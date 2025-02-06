@@ -21,26 +21,26 @@ namespace TaskTracker.WebAPI.Controllers
         [HttpGet("{itemId:guid}")]
         public async Task<IActionResult> GetItem(Guid itemId)
         {
-            return Ok(ConvertToDto(await _itemsService.GetItem(itemId)));
+            return Ok(ConvertToResponse(await _itemsService.GetItem(itemId)));
         }
 
         [HttpGet]
         public IActionResult GetItems([FromQuery] Guid boardId)
         {
-            return Ok(_itemsService.GetItems(boardId).Select(ConvertToDto));
+            return Ok(_itemsService.GetItems(boardId).Select(ConvertToResponse));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateItem([FromQuery] Guid boardId, [FromBody] TodoItemSummaryDto itemSummary)
+        public async Task<IActionResult> CreateItem([FromQuery] Guid boardId, [FromBody] CreateTodoItemRequest itemRequest)
         {
-            var newTodoItem = await _itemsService.CreateItem(itemSummary.Name, boardId);
-            return CreatedAtAction(nameof(CreateItem), newTodoItem.Id, ConvertToDto(newTodoItem));
+            var newTodoItem = await _itemsService.CreateItem(itemRequest.Name, boardId);
+            return CreatedAtAction(nameof(CreateItem), newTodoItem.Id, ConvertToResponse(newTodoItem));
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateItem([FromBody] TodoItemDto item)
+        public async Task<IActionResult> UpdateItem([FromBody] UpdateTodoItemRequest itemRequest)
         {
-            await _itemsService.UpdateItem(item.Id, item.Name, item.State); 
+            await _itemsService.UpdateItem(itemRequest.Id, itemRequest.Name, itemRequest.State); 
             return NoContent();
         }
 
@@ -51,9 +51,9 @@ namespace TaskTracker.WebAPI.Controllers
             return NoContent();
         }
 
-        private static TodoItemDto ConvertToDto(TodoItem item)
+        private static TodoItemResponse ConvertToResponse(TodoItem item)
         {
-            return new TodoItemDto
+            return new TodoItemResponse
             {
                 Id = item.Id,
                 Name = item.Name,

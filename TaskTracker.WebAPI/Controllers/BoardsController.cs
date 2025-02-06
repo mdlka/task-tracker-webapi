@@ -21,25 +21,25 @@ namespace TaskTracker.WebAPI.Controllers
         [HttpGet("{boardId:guid}")]
         public async Task<IActionResult> GetBoard(Guid boardId)
         {
-            return Ok(ConvertToDto(await _boardService.GetBoard(boardId)));
+            return Ok(ConvertToResponse(await _boardService.GetBoard(boardId)));
         }
 
         [HttpGet]
         public IActionResult GetBoards()
         {
-            return Ok(_boardService.GetBoards().Select(ConvertToDto));
+            return Ok(_boardService.GetBoards().Select(ConvertToResponse));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBoard([FromBody] BoardSummaryDto boardSummary)
+        public async Task<IActionResult> CreateBoard([FromBody] BoardRequest boardRequest)
         {
-            var newBoard = await _boardService.CreateBoard(boardSummary.Name);
-            return CreatedAtAction(nameof(CreateBoard), newBoard.Id, ConvertToDto(newBoard));
+            var newBoard = await _boardService.CreateBoard(boardRequest.Name);
+            return CreatedAtAction(nameof(CreateBoard), newBoard.Id, ConvertToResponse(newBoard));
         }
 
-        private static BoardDto ConvertToDto(Board board)
+        private static BoardResponse ConvertToResponse(Board board)
         {
-            return new BoardDto
+            return new BoardResponse
             {
                 Id = board.Id,
                 Name = board.Name

@@ -17,17 +17,17 @@ namespace TaskTracker.WebAPI.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegistrationDto registrationDto)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
         {
-            return await _authService.Register(registrationDto.Email, registrationDto.Name, registrationDto.Password) 
+            return await _authService.Register(registerRequest.Email, registerRequest.Name, registerRequest.Password) 
                 ? Ok() 
                 : BadRequest();
         }
         
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserCredentialsDto userCredentials)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var token = await _authService.Login(userCredentials.Email, userCredentials.Password);
+            var token = await _authService.Login(loginRequest.Email, loginRequest.Password);
             return Ok(token);
         }
 
