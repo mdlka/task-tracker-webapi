@@ -2,6 +2,7 @@ using System.Security.Claims;
 using TaskTracker.Filters;
 using TaskTracker.Services;
 using TaskTracker.Extensions;
+using TaskTracker.Repositories;
 
 namespace TaskTracker
 {
@@ -27,6 +28,8 @@ namespace TaskTracker
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<CurrentUserService>();
+
+            builder.Services.AddScoped<ICoreRepositoryWrapper, CoreRepositoryWrapper>();
             
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddTransient(provider => 

@@ -1,23 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TaskTracker.Entities;
+﻿using TaskTracker.Entities;
 using TaskTracker.Exceptions;
+using TaskTracker.Repositories;
 
 namespace TaskTracker.Services
 {
     public class BoardService
     {
-        private readonly TodoContext _context;
+        private readonly ICoreRepositoryWrapper _repositoryWrapper;
         private readonly CurrentUserService _currentUserService;
 
-        public BoardService(TodoContext context, CurrentUserService currentUserService)
+        public BoardService(ICoreRepositoryWrapper repositoryWrapper, CurrentUserService currentUserService)
         {
-            _context = context;
+            _repositoryWrapper = repositoryWrapper;
             _currentUserService = currentUserService;
         }
 
         public async Task<Board> GetBoard(Guid boardId)
         {
-            var board = await _context.Boards.AsNoTracking().FirstOrDefaultAsync(b => b.Id == boardId);
+            var board = await _repositoryWrapper.Boards.FirstOrDefault(b => b.Id == boardId);
 
             if (board == null)
                 throw new NotFoundException();
@@ -36,7 +36,7 @@ namespace TaskTracker.Services
             if (_currentUserService.IsAnonymous)
                 throw new UnauthorizedException();
             
-            return _context.Boards.Where(b => b.OwnerId == _currentUserService.GetUserId()).AsNoTracking();
+            return _repositoryWrapper.Boards.FindAll(b => b.OwnerId == _currentUserService.GetUserId());
         }
 
         public async Task<Board> CreateBoard(string boardName)
@@ -51,8 +51,8 @@ namespace TaskTracker.Services
                 Name = boardName
             };
 
-            await _context.AddAsync(board);
-            await _context.SaveChangesAsync();
+            await _repositoryWrapper.Boards.Add(board);
+            await _repositoryWrapper.Save();
 
             return board;
         }

@@ -1,25 +1,25 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskTracker.Entities;
 using TaskTracker.Exceptions;
+using TaskTracker.Repositories;
 
 namespace TaskTracker.Services
 {
     public class TodoItemsService
     {
-        private readonly TodoContext _context;
+        private readonly ICoreRepositoryWrapper _repositoryWrapper;
         private readonly CurrentUserService _currentUserService;
 
-        public TodoItemsService(TodoContext context, CurrentUserService currentUserService)
+        public TodoItemsService(ICoreRepositoryWrapper repositoryWrapper, CurrentUserService currentUserService)
         {
-            _context = context;
+            _repositoryWrapper = repositoryWrapper;
             _currentUserService = currentUserService;
         }
 
         public async Task<TodoItem> GetItem(Guid itemId)
         {
-            var item = await _context.TodoItems
-                .Include(item => item.Board)
-                .FirstOrDefaultAsync(item => item.Id == itemId);
+            var item = await _repositoryWrapper.Items.FirstOrDefault(item => item.Id == itemId, 
+                                    with: item => item.Board);
 
             if (item == null)
                 throw new NotFoundException();
@@ -37,11 +37,10 @@ namespace TaskTracker.Services
         {
             if (_currentUserService.IsAnonymous)
                 throw new UnauthorizedException();
-            
-            return _context.TodoItems
-                .Include(item => item.Board)
-                .Where(item => item.BoardId == boardId && item.Board.OwnerId == _currentUserService.GetUserId())
-                .AsNoTracking();
+
+            return _repositoryWrapper.Items.FindAll(
+                item => item.BoardId == boardId && item.Board.OwnerId == _currentUserService.GetUserId(),
+                with: item => item.Board);
         }
 
         public async Task<TodoItem> CreateItem(string itemName, Guid boardId)
@@ -56,8 +55,8 @@ namespace TaskTracker.Services
                 BoardId = boardId
             };
 
-            await _context.TodoItems.AddAsync(newTodoItem);
-            await _context.SaveChangesAsync();
+            await _repositoryWrapper.Items.Add(newTodoItem);
+            await _repositoryWrapper.Save();
 
             return newTodoItem;
         }
@@ -69,16 +68,16 @@ namespace TaskTracker.Services
             item.Name = newItemName;
             item.State = newItemState;
 
-            _context.TodoItems.Update(item);
-            await _context.SaveChangesAsync();
+            _repositoryWrapper.Items.Update(item);
+            await _repositoryWrapper.Save();
         }
 
         public async Task DeleteItem(Guid itemId)
         {
             var item = await GetItem(itemId);
-
-            _context.TodoItems.Remove(item);
-            await _context.SaveChangesAsync();
+            
+            _repositoryWrapper.Items.Delete(item);
+            await _repositoryWrapper.Save();
         }
         
         private async Task<bool> HasAccessToBoard(Guid boardId)
@@ -86,7 +85,7 @@ namespace TaskTracker.Services
             if (_currentUserService.IsAnonymous)
                 return false;
 
-            var board = await _context.Boards.FirstOrDefaultAsync(board => board.Id == boardId);
+            var board = await _repositoryWrapper.Boards.FirstOrDefault(board => board.Id == boardId);
             return board != null && board.OwnerId == _currentUserService.GetUserId();
         }
     }
