@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using TaskTracker.Core.Exceptions;
 using TaskTracker.Core.Models;
 using TaskTracker.Core.Repositories;
@@ -35,7 +36,7 @@ namespace TaskTracker.Infrastructure.Services
             {
                 UserId = userId,
                 Login = email,
-                PasswordHash = password,
+                PasswordHash = new PasswordHasher<object?>().HashPassword(null, password),
                 Version = 1
             });
 
@@ -49,7 +50,13 @@ namespace TaskTracker.Infrastructure.Services
             var userCredentials = await _repositoryWrapper.UserCredentials
                 .FirstOrDefault(u => u.Login == email);
 
-            if (userCredentials == null || password != userCredentials.PasswordHash)
+            if (userCredentials == null)
+                throw new UnauthorizedException();
+            
+            var passwordVerificationResult = new PasswordHasher<object?>()
+                .VerifyHashedPassword(null, userCredentials.PasswordHash, password);
+            
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
                 throw new UnauthorizedException();
 
             var refreshToken = _tokenService.CreateRefreshToken();
