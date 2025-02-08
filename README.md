@@ -27,7 +27,7 @@ The project provides the following features:
 
 - `POST /api/auth/register` – Register a new user
 - `POST /api/auth/login` – User login
-- `POST /api/auth/refresh` – Refresh JWT token
+- `POST /api/auth/refresh` – Refresh authentication token
 
 ### Boards
 
