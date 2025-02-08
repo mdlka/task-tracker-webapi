@@ -56,5 +56,23 @@ namespace TaskTracker.Core.Services
 
             return board;
         }
+        
+        public async Task UpdateBoard(Guid boardId, string newBoardName)
+        {
+            var board = await GetBoard(boardId);
+
+            board.Name = newBoardName;
+
+            _repositoryWrapper.Boards.Update(board);
+            await _repositoryWrapper.Save();
+        }
+
+        public async Task DeleteBoard(Guid boardId)
+        {
+            var board = await GetBoard(boardId);
+
+            _repositoryWrapper.Boards.Delete(board);
+            await _repositoryWrapper.Save();
+        }
     }
 }

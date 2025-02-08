@@ -31,10 +31,24 @@ namespace TaskTracker.WebAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBoard([FromBody] BoardRequest boardRequest)
+        public async Task<IActionResult> CreateBoard([FromBody] CreateBoardRequest boardRequest)
         {
             var newBoard = await _boardService.CreateBoard(boardRequest.Name);
             return CreatedAtAction(nameof(CreateBoard), newBoard.Id, ConvertToResponse(newBoard));
+        }
+        
+        [HttpPut]
+        public async Task<IActionResult> UpdateBoard([FromBody] UpdateBoardRequest boardRequest)
+        {
+            await _boardService.UpdateBoard(boardRequest.Id, boardRequest.Name);
+            return NoContent();
+        }
+
+        [HttpDelete("{boardId:guid}")]
+        public async Task<IActionResult> DeleteBoard(Guid boardId)
+        {
+            await _boardService.DeleteBoard(boardId);
+            return NoContent();
         }
 
         private static BoardResponse ConvertToResponse(Board board)
