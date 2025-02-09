@@ -21,6 +21,10 @@ The project provides the following features:
 - Access control to resources based on user credentials;
 - API documentation via Swagger UI for simplified testing.
 
+## Database Structure
+
+![App Screenshot](https://raw.githubusercontent.com/mdlka/task-tracker-webapi/refs/heads/main/database_structure.png)
+
 ## API Endpoints
 
 ### Authentication
